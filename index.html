@@ -278,10 +278,22 @@
             { id:17, title: "Minecraft Earth", desc: "Blocky physics take over.", color: 0xffffff, speed: 0.5, t:["Trees float when chopped", "Creepers spawn in dark zones", "Digging straight down is fatal"], stats:["20", "1.0", "70", "42"] },
             { id:18, title: "Breathing Earth", desc: "The planet expands and contracts.", color: 0xffffff, speed: 1.0, t:["Earthquakes are just hiccups", "Atmosphere gets pushed in and out", "Tides become incredibly chaotic"], stats:["20", "0.5-1.5", "71", "30"] },
             
-            // --- NEW SCENARIOS ---
+            // --- SCENARIOS 19-21 ---
             { id:19, title: "Jupiter Mass", desc: "Earth becomes a super-massive gas giant.", color: 0xffaa55, speed: 1.5, t:["You instantly weigh 300x more", "Atmospheric pressure crushes everything", "Diamonds begin to rain from the sky"], stats:["150", "2.5", "10", "0"] },
             { id:20, title: "Cyberpunk Earth", desc: "A planet-wide glowing mega-city.", color: 0xff00ff, speed: 0.8, t:["Oceans replaced by glowing data streams", "Pollution reaches critical levels globally", "Flying cars and neon fill the sky"], stats:["35", "1.0", "0", "85"] },
-            { id:21, title: "Cheese Earth", desc: "The planet is literally made of cheese.", color: 0xffcc00, speed: 0.5, t:["A delicious smell fills the air", "Mice population explodes rapidly", "Oceans slowly turn into warm fondue"], stats:["25", "0.8", "0", "99"] }
+            { id:21, title: "Cheese Earth", desc: "The planet is literally made of cheese.", color: 0xffcc00, speed: 0.5, t:["A delicious smell fills the air", "Mice population explodes rapidly", "Oceans slowly turn into warm fondue"], stats:["25", "0.8", "0", "99"] },
+
+            // --- THE 10 NEW SCENARIOS ---
+            { id:22, title: "Potato Earth", desc: "It's just a giant space potato.", color: 0xffffff, speed: 0.5, t:["French fry asteroids spotted", "Gravitational lumps cause weird walking", "The Irish space program dominates"], stats:["10", "0.8", "0", "80"] },
+            { id:23, title: "Bouncy Earth", desc: "The planet lost its rigid structure.", color: 0xffffff, speed: 1.0, t:["Everyone feels seasick instantly", "Trampolines become completely obsolete", "Earthquakes are just wobbly giggles"], stats:["20", "0.5-1.5", "71", "70"] },
+            { id:24, title: "Disco Planet", desc: "Saturday Night Fever on a global scale.", color: 0xffffff, speed: 3.0, t:["Oceans turn into flashing dance floors", "Clouds pulse to an invisible beat", "Aliens arrive just to rate our moves"], stats:["25", "1.0", "71", "90"] },
+            { id:25, title: "Invisible Earth", desc: "Someone pressed 'hide layer'.", color: 0xffffff, speed: 1.0, t:["Birds crash into invisible mountains", "Satellites completely lose visual tracking", "Where did I park my car?"], stats:["15", "1.0", "71", "5"] },
+            { id:26, title: "Neon Grid", desc: "Digital simulation confirmed.", color: 0xffffff, speed: 1.0, t:["Nature textures fail to load", "Physics engine starts glitching", "Everything resolves into glowing polygons"], stats:["0", "1.0", "0", "99"] },
+            { id:27, title: "Magma Oceans", desc: "Water boils away, replaced by lava.", color: 0xffffff, speed: 1.0, t:["Total evaporation of all seas", "Global temperature skyrockets violently", "Ships quickly replaced by hovercrafts"], stats:["800", "1.0", "0", "0"] },
+            { id:28, title: "Absolute Ice", desc: "The ultimate frozen wasteland.", color: 0xffffff, speed: 0.2, t:["Oceans freeze solid instantly", "Atmosphere turns into liquid snow", "Absolute silence falls globally"], stats:["-200", "1.0", "100", "2"] },
+            { id:29, title: "Solid Gold", desc: "Midas touched the world.", color: 0xffffff, speed: 0.5, t:["Global economy crashes instantly", "Extreme heavy gravity crushes structures", "Sunlight reflections cause mass blindness"], stats:["40", "2.5", "0", "0"] },
+            { id:30, title: "Spaghettification", desc: "Tidal forces from a nearby black hole.", color: 0xffffff, speed: 3.0, t:["Extreme vertical stretching begins", "Time dilation makes clocks stop", "Event horizon crossed - reality breaks"], stats:["-100", "100", "0", "0"] },
+            { id:31, title: "Hyper Spin", desc: "1 Second = 1 Day.", color: 0xffffff, speed: 30.0, t:["Centrifugal force throws loose objects to space", "Atmosphere ignites from insane friction", "Complete planetary structural failure"], stats:["500", "0.1", "0", "0"] }
         ];
 
         /** ENGINE GLOBALS **/
@@ -293,6 +305,8 @@
         let ringMesh, debrisMesh, coreMesh;
         let isSim = false;
         let breathingTween = null;
+        let bouncyTween = null;
+        let discoInterval = null;
         let controls;
 
         const textureLoader = new THREE.TextureLoader();
@@ -558,7 +572,7 @@
 
             // CINEMATIC SWOOP CAMERA
             let targetZ = 2.8;
-            if(s.id === 15 || s.id === 16) targetZ = 3.5; 
+            if([15, 16, 17, 30].includes(s.id)) targetZ = 3.5; 
             if(s.id === 19) targetZ = 4.0; // Zoom further out for Jupiter
             
             gsap.fromTo(camera.position, 
@@ -659,11 +673,46 @@
                     globeMat.bumpScale = 0.05; // Extra bumpy
                     clouds.visible = false; nightGlobe.visible = false;
                     break;
+                case 22: // Potato
+                    globeMat.map = null; globeMat.color.setHex(0x8B5A2B); globeMat.bumpScale = 0.1; globe.scale.set(1.2, 0.8, 1.1); clouds.visible = false; nightGlobe.visible = false; 
+                    break;
+                case 23: // Bouncy
+                    bouncyTween = gsap.to(globe.scale, { y: 0.7, x: 1.15, z: 1.15, duration: 0.4, yoyo: true, repeat: -1, ease: "bounce.inOut" }); 
+                    break;
+                case 24: // Disco
+                    globeMat.map = null; globeMat.wireframe = true;
+                    discoInterval = setInterval(() => { globeMat.color.setHex(Math.random() * 0xffffff); globeMat.emissive.setHex(Math.random() * 0xffffff); }, 200);
+                    clouds.visible = false; 
+                    break;
+                case 25: // Invisible
+                    globeMat.transparent = true; globeMat.opacity = 0; nightGlobe.visible = false; 
+                    break;
+                case 26: // Neon Grid
+                    globeMat.map = null; globeMat.color.setHex(0x00ffff); globeMat.wireframe = true; clouds.visible = false; nightGlobe.visible = false;
+                    atmosphere.material.fragmentShader = `varying vec3 vNormal; void main() { gl_FragColor = vec4(0.0, 1.0, 1.0, 0.5); }`; atmosphere.material.needsUpdate = true; 
+                    break;
+                case 27: // Magma Oceans
+                    globeMat.map = null; globeMat.color.setHex(0xff2200); globeMat.emissive.setHex(0xaa1100); clouds.material.color.setHex(0x333333); nightGlobe.visible = false; 
+                    break;
+                case 28: // Absolute Ice
+                    globeMat.map = null; globeMat.color.setHex(0xddffff); globeMat.roughness = 0.1; globeMat.metalness = 0.5; clouds.visible = false; nightGlobe.visible = false; 
+                    break;
+                case 29: // Solid Gold
+                    globeMat.map = null; globeMat.color.setHex(0xffd700); globeMat.roughness = 0.1; globeMat.metalness = 1.0; clouds.visible = false; nightGlobe.visible = false; 
+                    break;
+                case 30: // Spaghettification
+                    gsap.to(globe.scale, { y: 3.0, x: 0.3, z: 0.3, duration: 2 }); gsap.to(clouds.scale, { y: 3.0, x: 0.3, z: 0.3, duration: 2 }); nightGlobe.visible = false; 
+                    break;
+                case 31: // Hyper Spin
+                    clouds.visible = false; nightGlobe.visible = false; 
+                    break;
             }
         }
 
         function resetVisuals() {
             if(breathingTween) { breathingTween.kill(); breathingTween = null; }
+            if(bouncyTween) { bouncyTween.kill(); bouncyTween = null; }
+            if(discoInterval) { clearInterval(discoInterval); discoInterval = null; }
             
             globe.geometry = sphereGeo;
             globe.scale.set(1, 1, 1);
