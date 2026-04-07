@@ -15,44 +15,48 @@
     <style>
         :root { --accent: #00d4ff; --font-main: 'Inter', sans-serif; --border: rgba(255,255,255,0.2); }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #000; color: #fff; font-family: var(--font-main); overflow: hidden; position: fixed; width: 100%; height: 100%; }
+        body { background: #000; color: #fff; font-family: var(--font-main); overflow: hidden; height: 100vh; width: 100vw; position: fixed; }
         
+        /* רקע תלת מימדי */
         canvas { position: fixed; top: 0; left: 0; z-index: -1; outline: none; }
 
-        /* TINY BUTTONS */
-        .tiny-btn { position: fixed; z-index: 100; font-size: 0.6rem; color: rgba(255,255,255,0.4); background: transparent; border: 1px solid transparent; cursor: pointer; transition: 0.3s; letter-spacing: 2px; padding: 5px 10px; border-radius: 3px; font-family: var(--font-main); }
+        /* כפתורים קטנים */
+        .tiny-btn { position: fixed; z-index: 1000; font-size: 0.6rem; color: rgba(255,255,255,0.4); background: transparent; border: 1px solid transparent; cursor: pointer; transition: 0.3s; letter-spacing: 2px; padding: 5px 10px; border-radius: 3px; font-family: var(--font-main); }
         .tiny-btn:hover { color: var(--accent); border-color: rgba(0,212,255,0.3); background: rgba(0,0,0,0.5); }
         #btn-support { top: 15px; left: 15px; } 
         #btn-bug { bottom: 15px; right: 15px; }
 
-        /* BUG MODAL */
-        #bug-modal { display: none; position: fixed; bottom: 45px; right: 15px; background: #0a0a0a; border: 1px solid var(--border); padding: 15px; z-index: 101; border-radius: 5px; width: 250px; }
+        /* מודל באגים */
+        #bug-modal { display: none; position: fixed; bottom: 45px; right: 15px; background: #0a0a0a; border: 1px solid var(--border); padding: 15px; z-index: 1001; border-radius: 5px; width: 250px; }
         #bug-modal p { font-size: 0.6rem; color: #888; margin-bottom: 10px; letter-spacing: 1px;}
         #bug-modal textarea { width: 100%; height: 80px; background: #000; color: #fff; border: 1px solid #333; font-size: 0.75rem; padding: 8px; resize: none; margin-bottom: 10px; border-radius: 3px; outline: none; font-family: var(--font-main); }
         #bug-modal textarea:focus { border-color: var(--accent); }
         .modal-btns { display: flex; gap: 10px; }
 
-        /* LIVE TIMER */
+        /* טיימר */
         #live-timer { position: fixed; top: 20px; right: 20px; text-align: right; z-index: 100; pointer-events: none; }
         #live-timer label { font-size: 0.55rem; letter-spacing: 2px; color: #888; display: block; margin-bottom: 3px; }
         #live-timer span { font-size: 1.1rem; font-weight: 200; color: var(--accent); letter-spacing: 3px; }
 
-        /* --- SIDEBAR LOBBY --- */
+        /* תפריט צד (לובי) - הוגדר רוחב קשיח במיוחד בשביל גיטהאב */
         #lobby { 
             position: absolute; 
             z-index: 10; 
             top: 0; 
             left: 0; 
-            bottom: 0; /* FIX FOR SCROLLING */
-            width: 380px; 
+            bottom: 0;
+            width: 380px !important; 
+            max-width: 380px !important;
+            height: 100vh; 
             overflow-y: auto; 
             overflow-x: hidden;
             background: rgba(15,15,15,0.95); 
             border-right: 1px solid var(--border); 
-            padding: 40px 20px 100px 20px; /* EXTRA BOTTOM PADDING */
-            transition: transform 1.5s ease, opacity 1.5s ease; 
+            padding: 40px 20px 100px 20px; 
+            transition: transform 0.8s ease, opacity 0.8s ease; 
             scrollbar-width: thin; 
             scrollbar-color: var(--accent) #000; 
+            box-sizing: border-box;
         }
         #lobby::-webkit-scrollbar { width: 6px; }
         #lobby::-webkit-scrollbar-track { background: #000; }
@@ -61,47 +65,32 @@
         .sim-active #lobby { transform: translateX(-100%); opacity: 0; pointer-events: none; }
 
         header { text-align: left; margin-bottom: 30px; position: relative; z-index: 50; }
-        h1 { font-size: 2.2rem; font-weight: 200; letter-spacing: 5px; text-transform: uppercase; background: linear-gradient(to bottom, #fff 30%, #555); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        h1 { font-size: 2.2rem; font-weight: 200; letter-spacing: 5px; text-transform: uppercase; background: linear-gradient(to bottom, #fff 30%, #555); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; }
         .subtitle { font-size: 0.75rem; letter-spacing: 2px; color: var(--accent); opacity: 0.8; margin-top: 5px; }
         
-        /* BULLETPROOF DROPDOWN FILTER */
+        /* תפריט סינון - SORT BY */
         .dropdown-wrapper { text-align: left; position: relative; z-index: 9999; margin-bottom: 40px; }
-        .dropdown { position: relative; display: inline-block; width: 100%; }
-        .dropbtn { background: #111; border: 1px solid var(--accent); color: var(--accent); padding: 10px 20px; font-size: 0.75rem; letter-spacing: 3px; border-radius: 4px; cursor: pointer; transition: 0.3s; font-family: var(--font-main); font-weight: bold; width: 100%; text-align: left; display: flex; justify-content: space-between; align-items: center;}
+        .dropdown { position: relative; display: block; width: 100%; }
+        .dropbtn { background: #111; border: 1px solid var(--accent); color: var(--accent); padding: 12px 20px; font-size: 0.75rem; letter-spacing: 3px; border-radius: 4px; cursor: pointer; transition: 0.3s; font-family: var(--font-main); font-weight: bold; width: 100%; text-align: left; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.5);}
         .dropbtn:hover { background: #222; }
-        .dropdown-content { display: none; position: absolute; top: 110%; left: 0; min-width: 100%; background: #000; border: 1px solid var(--accent); border-radius: 4px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.9); }
-        .dropdown-content button { color: #fff; padding: 12px 15px; display: block; width: 100%; text-align: left; background: transparent; border: none; font-size: 0.7rem; letter-spacing: 2px; cursor: pointer; transition: 0.2s; border-bottom: 1px solid #333; font-family: var(--font-main); }
+        .dropdown-content { display: none; position: absolute; top: 110%; left: 0; width: 100%; background: #000; border: 1px solid var(--accent); border-radius: 4px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.9); z-index: 10000; }
+        .dropdown-content button { color: #fff; padding: 15px; display: block; width: 100%; text-align: left; background: transparent; border: none; font-size: 0.7rem; letter-spacing: 2px; cursor: pointer; transition: 0.2s; border-bottom: 1px solid #333; font-family: var(--font-main); }
         .dropdown-content button:last-child { border-bottom: none; }
         .dropdown-content button:hover { background: #222; color: var(--accent); }
-        .show { display: block; }
+        .show { display: block !important; }
 
-        /* CARDS IN SIDEBAR (VERTICAL LIST) */
+        /* כרטיסיות הרשימה */
         .grid { display: flex; flex-direction: column; gap: 15px; position: relative; z-index: 10; }
-        
-        .card { 
-            background-color: #151515 !important; 
-            border: 1px solid #444; 
-            border-radius: 8px; 
-            padding: 20px; 
-            cursor: pointer; 
-            transition: 0.3s; 
-            position: relative; 
-            box-shadow: 0 5px 20px rgba(0,0,0,0.8); 
-        }
-        .card:hover { 
-            border-color: var(--accent); 
-            background-color: #202020 !important; 
-            transform: translateX(5px); 
-            box-shadow: 0 10px 30px rgba(0,212,255,0.2); 
-        }
+        .card { background-color: #151515 !important; border: 1px solid #444; border-radius: 8px; padding: 20px; cursor: pointer; transition: 0.3s; position: relative; box-shadow: 0 5px 20px rgba(0,0,0,0.8); }
+        .card:hover { border-color: var(--accent); background-color: #202020 !important; transform: translateX(5px); box-shadow: 0 10px 30px rgba(0,212,255,0.2); }
         .card h3 { font-size: 1rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; color: #fff; font-weight: 700; }
         .card p { font-size: 0.8rem; color: #ccc; line-height: 1.5; }
 
-        /* SIMULATION UI */
-        #sim-ui { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 20; pointer-events: none; opacity: 0; transition: opacity 1.5s ease; }
+        /* ממשק הסימולציה */
+        #sim-ui { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 20; pointer-events: none; opacity: 0; transition: opacity 1s ease; }
         .sim-active #sim-ui { opacity: 1; pointer-events: auto; }
-        .top-bar { padding: 40px; display: flex; justify-content: space-between; align-items: flex-start; }
-        .sim-info { text-align: center; flex: 1; margin: 0 40px; }
+        .top-bar { padding: 40px; display: flex; justify-content: space-between; align-items: flex-start; pointer-events: none;}
+        .sim-info { text-align: center; flex: 1; margin: 0 40px; pointer-events: auto;}
         .sim-info h2 { font-size: 2rem; font-weight: 200; letter-spacing: 8px; text-transform: uppercase; color: var(--accent); background: #151515; display: inline-block; padding: 10px 20px; border-radius: 5px; border: 1px solid #333; }
         .sim-info p { font-size: 0.9rem; color: #ccc; margin-top: 10px; background: #151515; display: inline-block; padding: 10px 20px; border-radius: 5px; border: 1px solid #333; }
         .btn { background: #111; border: 1px solid var(--border); color: #fff; padding: 12px 24px; font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: 0.3s; border-radius: 4px; font-weight: bold; pointer-events: auto; }
@@ -118,17 +107,17 @@
         .time-step span { font-size: 0.65rem; color: var(--accent); display: block; font-weight: 700; letter-spacing: 1px; }
         .time-step p { font-size: 0.85rem; color: #ddd; max-width: 250px; margin-top: 5px; line-height: 1.4; }
 
-        /* EXPLANATION MODAL */
-        #stat-expl-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #111; border: 1px solid var(--accent); padding: 30px; z-index: 200; border-radius: 8px; width: 350px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.9); }
+        /* מודל הסברים */
+        #stat-expl-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #111; border: 1px solid var(--accent); padding: 30px; z-index: 2000; border-radius: 8px; width: 350px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.9); }
         #stat-expl-modal h3 { color: var(--accent); margin-bottom: 15px; letter-spacing: 3px; font-weight: 400; font-size: 1rem; }
         #stat-expl-modal p { font-size: 0.85rem; color: #ddd; line-height: 1.6; }
         .close-stat { position: absolute; top: 10px; right: 15px; cursor: pointer; color: #888; font-size: 1.2rem; transition: 0.3s; }
         .close-stat:hover { color: #fff; transform: scale(1.2); }
         
-        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #050505; z-index: 1000; display: flex; justify-content: center; align-items: center; font-size: 0.8rem; letter-spacing: 5px; color: var(--accent); transition: opacity 1s ease; }
+        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #050505; z-index: 10000; display: flex; justify-content: center; align-items: center; font-size: 0.8rem; letter-spacing: 5px; color: var(--accent); transition: opacity 1s ease; }
 
-        /* Mobile */
-        @media (max-width: 768px) { #lobby { width: 100%; border-right: none; } }
+        /* התאמה לנייד */
+        @media (max-width: 768px) { #lobby { width: 100% !important; max-width: 100% !important; border-right: none; } }
     </style>
 </head>
 <body>
@@ -201,6 +190,7 @@
     </div>
 
     <script>
+        // המערך המלא של 36 התרחישים עם כל ההסברים!
         const scenarios = [
             { id:1, cat:'sci', title: "Twice as Fast", desc: "Day/Night cycle is now 12 hours.", speed: 4, t:["Violent wind patterns start", "Extreme tidal bulges flood coasts", "Global jetstream destabilization"], stats:["22", "0.9", "71", "60"], expl:["Faster rotation heats the atmosphere through extreme friction.", "Centrifugal force pushes you slightly upward.", "Oceans become violently chaotic.", "Super-hurricanes drop survival rates."] },
             { id:2, cat:'sci', title: "No Sun", desc: "Earth drifts into deep space.", speed: 0.5, t:["Total darkness falls instantly", "Global surface freeze begins", "Atmosphere collapses into snow"], stats:["-270", "1.0", "100", "0"], expl:["Earth cools to the temperature of deep space.", "Mass hasn't changed, so gravity remains normal.", "Oceans freeze solid instantly.", "No heat and no photosynthesis means zero chance for surface life."] },
@@ -259,7 +249,7 @@
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(40, window.innerWidth/window.innerHeight, 0.1, 1000);
             
-            // CAMERA PUSHED LEFT FOR SIDEBAR
+            // המצלמה בצד שמאל כדי שהתפריט לא יסתיר את כדור הארץ
             camera.position.set(-1.5, 0, 6);
 
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -293,7 +283,7 @@
             debrisGeo.setAttribute('position', new THREE.Float32BufferAttribute(debCoords, 3)); debrisMesh = new THREE.Points(debrisGeo, new THREE.PointsMaterial({color: 0xff5533, size: 0.015})); debrisMesh.visible = false; scene.add(debrisMesh);
             coreMesh = new THREE.Mesh(new THREE.SphereGeometry(0.5, 64, 64), new THREE.MeshBasicMaterial({ color: 0xff3300 })); coreMesh.visible = false; scene.add(coreMesh);
             
-            // JUPITER MESH
+            // מודל כוכב צדק בשביל התרחיש המיוחד
             jupiterMesh = new THREE.Mesh(new THREE.SphereGeometry(4, 64, 64), new THREE.MeshStandardMaterial({ color: 0xd39c7e, roughness: 0.9 })); jupiterMesh.position.set(-10, 4, -15); jupiterMesh.visible = false; scene.add(jupiterMesh);
 
             const starGeo = new THREE.BufferGeometry(); const starCoords = []; for(let i=0; i<8000; i++) { starCoords.push((Math.random()-0.5)*150, (Math.random()-0.5)*150, (Math.random()-0.5)*150); }
@@ -312,6 +302,7 @@
             initUI(); animate(); filterData('all', 'ALL SCENARIOS');
         }
 
+        // לוגיקה של התפריט הנפתח (Sort By)
         function toggleDropdown() { document.getElementById("sortDropdown").classList.toggle("show"); }
         window.onclick = function(event) {
             if (!event.target.matches('.dropbtn')) {
@@ -328,7 +319,7 @@
                     const div = document.createElement('div'); div.className = 'card'; div.innerHTML = `<h3>${s.title}</h3><p>${s.desc}</p>`; div.onclick = () => enterSim(s); grid.appendChild(div);
                 }
             });
-            // FIXED: Using clearProps to ensure cards never get stuck invisible
+            // תיקון לאנימציה כדי שהכרטיסיות לא יעלמו לעולם
             gsap.fromTo(".card", { x: -20, opacity: 0 }, { x: 0, opacity: 1, duration: 0.3, stagger: 0.02, ease: "power1.out", clearProps: "all" });
         }
 
@@ -385,10 +376,11 @@
             
             let targetZ = 2.8; if([15, 16, 17, 30].includes(s.id)) targetZ = 3.5; if(s.id === 19) targetZ = 4.0;
             
-            // CAMERA MOVES TO CENTER
+            // מזיז את המצלמה למרכז כשבוחרים תרחיש
             gsap.fromTo(camera.position, { x: -1.5, y: 2 }, { x: 0, y: 0, z: targetZ, duration: 2.5, ease: "power3.inOut" }); 
             controls.autoRotate = true; gsap.to(controls, { autoRotateSpeed: s.speed, duration: 2 });
 
+            // כל האפקטים הגרפיים לכל תרחיש אפשרי!
             switch(s.id) {
                 case 2: gsap.to(sun, { intensity: 0, duration: 2 }); atmosphere.visible = false; nightGlobe.material.uniforms.opacity.value = 0.5; nightGlobe.material.uniforms.sunPosition.value = new THREE.Vector3(0,0,0); break;
                 case 3: gsap.to(globe.scale, { y: 0.85, duration: 2 }); break;
@@ -448,7 +440,7 @@
             closeStatExpl(); 
             document.body.classList.remove('sim-active'); 
             
-            // CAMERA MOVES BACK TO SIDEBAR LAYOUT
+            // מחזיר את המצלמה שמאלה ללובי
             gsap.to(camera.position, { x: -1.5, y: 0, z: 6, duration: 2, ease: "power2.inOut" }); 
             resetSim(); 
         }
