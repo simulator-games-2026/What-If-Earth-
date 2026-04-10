@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="ua6_q4Tq_knYYu7sIAJFPGEzsgsPLlSxSIKqJyCv22M" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Experience a high-fidelity planetary simulation. 'What If Earth' challenges reality through advanced 3D visual analysis, exploring extreme climate shifts and gravitational anomalies.">
+    <meta name="description" content="Experience a high-fidelity planetary simulation.">
     <title>WHAT IF EARTH? | Premium Earth Simulator</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -15,109 +15,110 @@
     <style>
         :root { --accent: #00d4ff; --font-main: 'Inter', sans-serif; --border: rgba(255,255,255,0.2); }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #000; color: #fff; font-family: var(--font-main); overflow: hidden; height: 100vh; width: 100vw; position: fixed; }
+        body { background: #000; color: #fff; font-family: var(--font-main); overflow: hidden; height: 100vh; width: 100vw; }
         
-        /* רקע תלת מימדי */
-        canvas { position: fixed; top: 0; left: 0; z-index: -1; outline: none; }
+        canvas { position: absolute; top: 0; left: 0; z-index: -1; outline: none; }
 
-        /* כפתורים קטנים */
-        .tiny-btn { position: fixed; z-index: 1000; font-size: 0.6rem; color: rgba(255,255,255,0.4); background: transparent; border: 1px solid transparent; cursor: pointer; transition: 0.3s; letter-spacing: 2px; padding: 5px 10px; border-radius: 3px; font-family: var(--font-main); }
+        .tiny-btn { position: fixed; z-index: 9000; font-size: 0.6rem; color: rgba(255,255,255,0.4); background: transparent; border: 1px solid transparent; cursor: pointer; transition: 0.3s; letter-spacing: 2px; padding: 5px 10px; border-radius: 3px; font-family: var(--font-main); }
         .tiny-btn:hover { color: var(--accent); border-color: rgba(0,212,255,0.3); background: rgba(0,0,0,0.5); }
         #btn-support { top: 15px; left: 15px; } 
         #btn-bug { bottom: 15px; right: 15px; }
 
-        /* מודל באגים */
-        #bug-modal { display: none; position: fixed; bottom: 45px; right: 15px; background: #0a0a0a; border: 1px solid var(--border); padding: 15px; z-index: 1001; border-radius: 5px; width: 250px; }
+        #bug-modal { display: none; position: fixed; bottom: 45px; right: 15px; background: #0a0a0a; border: 1px solid var(--border); padding: 15px; z-index: 10000; border-radius: 5px; width: 250px; }
         #bug-modal p { font-size: 0.6rem; color: #888; margin-bottom: 10px; letter-spacing: 1px;}
         #bug-modal textarea { width: 100%; height: 80px; background: #000; color: #fff; border: 1px solid #333; font-size: 0.75rem; padding: 8px; resize: none; margin-bottom: 10px; border-radius: 3px; outline: none; font-family: var(--font-main); }
         #bug-modal textarea:focus { border-color: var(--accent); }
         .modal-btns { display: flex; gap: 10px; }
 
-        /* טיימר */
-        #live-timer { position: fixed; top: 20px; right: 20px; text-align: right; z-index: 100; pointer-events: none; }
+        #live-timer { position: fixed; top: 20px; right: 20px; text-align: right; z-index: 9000; pointer-events: none; }
         #live-timer label { font-size: 0.55rem; letter-spacing: 2px; color: #888; display: block; margin-bottom: 3px; }
         #live-timer span { font-size: 1.1rem; font-weight: 200; color: var(--accent); letter-spacing: 3px; }
 
-        /* תפריט צד (לובי) - הוגדר רוחב קשיח במיוחד בשביל גיטהאב */
+        /* --- הלובי הראשי - חסין לחלוטין מבאגים --- */
         #lobby { 
             position: absolute; 
-            z-index: 10; 
+            z-index: 1000; 
             top: 0; 
             left: 0; 
             bottom: 0;
-            width: 380px !important; 
-            max-width: 380px !important;
+            width: 380px; 
             height: 100vh; 
             overflow-y: auto; 
             overflow-x: hidden;
             background: rgba(15,15,15,0.95); 
             border-right: 1px solid var(--border); 
             padding: 40px 20px 100px 20px; 
-            transition: transform 0.8s ease, opacity 0.8s ease; 
-            scrollbar-width: thin; 
-            scrollbar-color: var(--accent) #000; 
+            transition: transform 0.8s ease, opacity 0.8s ease, visibility 0.8s; 
             box-sizing: border-box;
+            visibility: visible;
+            opacity: 1;
         }
-        #lobby::-webkit-scrollbar { width: 6px; }
-        #lobby::-webkit-scrollbar-track { background: #000; }
-        #lobby::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
+        
+        /* עיצוב פס גלילה בולט וברור */
+        #lobby::-webkit-scrollbar { width: 12px; }
+        #lobby::-webkit-scrollbar-track { background: #0a0a0a; border-left: 1px solid #222; }
+        #lobby::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 6px; border: 2px solid #0a0a0a; }
+        #lobby::-webkit-scrollbar-thumb:hover { background: #fff; }
 
-        .sim-active #lobby { transform: translateX(-100%); opacity: 0; pointer-events: none; }
+        .sim-active #lobby { transform: translateX(-100%); opacity: 0; visibility: hidden; }
 
         header { text-align: left; margin-bottom: 30px; position: relative; z-index: 50; }
         h1 { font-size: 2.2rem; font-weight: 200; letter-spacing: 5px; text-transform: uppercase; background: linear-gradient(to bottom, #fff 30%, #555); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; }
         .subtitle { font-size: 0.75rem; letter-spacing: 2px; color: var(--accent); opacity: 0.8; margin-top: 5px; }
         
-        /* תפריט סינון - SORT BY */
+        /* תפריט SORT BY מתוקן ב-100% */
         .dropdown-wrapper { text-align: left; position: relative; z-index: 9999; margin-bottom: 40px; }
         .dropdown { position: relative; display: block; width: 100%; }
         .dropbtn { background: #111; border: 1px solid var(--accent); color: var(--accent); padding: 12px 20px; font-size: 0.75rem; letter-spacing: 3px; border-radius: 4px; cursor: pointer; transition: 0.3s; font-family: var(--font-main); font-weight: bold; width: 100%; text-align: left; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.5);}
+        .dropbtn * { pointer-events: none; } /* מונע מהחץ להפריע ללחיצה */
         .dropbtn:hover { background: #222; }
+        
         .dropdown-content { display: none; position: absolute; top: 110%; left: 0; width: 100%; background: #000; border: 1px solid var(--accent); border-radius: 4px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.9); z-index: 10000; }
         .dropdown-content button { color: #fff; padding: 15px; display: block; width: 100%; text-align: left; background: transparent; border: none; font-size: 0.7rem; letter-spacing: 2px; cursor: pointer; transition: 0.2s; border-bottom: 1px solid #333; font-family: var(--font-main); }
         .dropdown-content button:last-child { border-bottom: none; }
         .dropdown-content button:hover { background: #222; color: var(--accent); }
         .show { display: block !important; }
 
-        /* כרטיסיות הרשימה */
-        .grid { display: flex; flex-direction: column; gap: 15px; position: relative; z-index: 10; }
-        .card { background-color: #151515 !important; border: 1px solid #444; border-radius: 8px; padding: 20px; cursor: pointer; transition: 0.3s; position: relative; box-shadow: 0 5px 20px rgba(0,0,0,0.8); }
+        .grid { display: flex; flex-direction: column; gap: 15px; position: relative; z-index: 10; padding-right: 5px; }
+        .card { background-color: #151515 !important; border: 1px solid #444; border-radius: 8px; padding: 20px; cursor: pointer; transition: 0.3s; position: relative; box-shadow: 0 5px 20px rgba(0,0,0,0.8); z-index: 20; }
+        .card * { pointer-events: none; } /* מוודא שרק הכרטיסייה לחיצה, לא הטקסט */
         .card:hover { border-color: var(--accent); background-color: #202020 !important; transform: translateX(5px); box-shadow: 0 10px 30px rgba(0,212,255,0.2); }
         .card h3 { font-size: 1rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; color: #fff; font-weight: 700; }
         .card p { font-size: 0.8rem; color: #ccc; line-height: 1.5; }
 
-        /* ממשק הסימולציה */
-        #sim-ui { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 20; pointer-events: none; opacity: 0; transition: opacity 1s ease; }
-        .sim-active #sim-ui { opacity: 1; pointer-events: auto; }
-        .top-bar { padding: 40px; display: flex; justify-content: space-between; align-items: flex-start; pointer-events: none;}
-        .sim-info { text-align: center; flex: 1; margin: 0 40px; pointer-events: auto;}
+        /* ממשק הסימולציה - ההסתרה המושלמת כשהוא לא פעיל */
+        #sim-ui { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 800; opacity: 0; visibility: hidden; transition: opacity 1s ease, visibility 1s ease; }
+        .sim-active #sim-ui { opacity: 1; visibility: visible; }
+        
+        .top-bar { padding: 40px; display: flex; justify-content: space-between; align-items: flex-start; }
+        .sim-info { text-align: center; flex: 1; margin: 0 40px; }
         .sim-info h2 { font-size: 2rem; font-weight: 200; letter-spacing: 8px; text-transform: uppercase; color: var(--accent); background: #151515; display: inline-block; padding: 10px 20px; border-radius: 5px; border: 1px solid #333; }
         .sim-info p { font-size: 0.9rem; color: #ccc; margin-top: 10px; background: #151515; display: inline-block; padding: 10px 20px; border-radius: 5px; border: 1px solid #333; }
-        .btn { background: #111; border: 1px solid var(--border); color: #fff; padding: 12px 24px; font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: 0.3s; border-radius: 4px; font-weight: bold; pointer-events: auto; }
+        
+        .btn { background: #111; border: 1px solid var(--border); color: #fff; padding: 12px 24px; font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: 0.3s; border-radius: 4px; font-weight: bold; }
         .btn:hover { background: var(--accent); color: #000; border-color: var(--accent); }
         
-        .bottom-panel { position: absolute; bottom: 40px; right: 40px; background: #151515; border: 1px solid #333; padding: 20px 30px; display: flex; gap: 40px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.9); pointer-events: auto; }
+        .bottom-panel { position: absolute; bottom: 40px; right: 40px; background: #151515; border: 1px solid #333; padding: 20px 30px; display: flex; gap: 40px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.9); }
         .stat { text-align: center; cursor: pointer; transition: 0.3s ease; padding: 5px; border-radius: 5px; }
+        .stat * { pointer-events: none; }
         .stat:hover { background: #222; transform: translateY(-3px); }
-        .stat label { display: block; font-size: 0.6rem; color: #888; letter-spacing: 2px; margin-bottom: 5px; cursor: pointer; }
-        .stat span { font-size: 1.2rem; font-weight: 700; color: #fff; pointer-events: none; }
+        .stat label { display: block; font-size: 0.6rem; color: #888; letter-spacing: 2px; margin-bottom: 5px; }
+        .stat span { font-size: 1.2rem; font-weight: 700; color: #fff; }
         
-        .timeline { position: absolute; left: 40px; top: 50%; transform: translateY(-50%); border-left: 2px solid var(--border); padding-left: 20px; pointer-events: auto; }
+        .timeline { position: absolute; left: 40px; top: 50%; transform: translateY(-50%); border-left: 2px solid var(--border); padding-left: 20px; }
         .time-step { margin-bottom: 25px; background: #151515; padding: 15px; border-radius: 8px; border: 1px solid #333; }
         .time-step span { font-size: 0.65rem; color: var(--accent); display: block; font-weight: 700; letter-spacing: 1px; }
         .time-step p { font-size: 0.85rem; color: #ddd; max-width: 250px; margin-top: 5px; line-height: 1.4; }
 
-        /* מודל הסברים */
-        #stat-expl-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #111; border: 1px solid var(--accent); padding: 30px; z-index: 2000; border-radius: 8px; width: 350px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.9); }
+        #stat-expl-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #111; border: 1px solid var(--accent); padding: 30px; z-index: 10000; border-radius: 8px; width: 350px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.9); }
         #stat-expl-modal h3 { color: var(--accent); margin-bottom: 15px; letter-spacing: 3px; font-weight: 400; font-size: 1rem; }
         #stat-expl-modal p { font-size: 0.85rem; color: #ddd; line-height: 1.6; }
         .close-stat { position: absolute; top: 10px; right: 15px; cursor: pointer; color: #888; font-size: 1.2rem; transition: 0.3s; }
         .close-stat:hover { color: #fff; transform: scale(1.2); }
         
-        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #050505; z-index: 10000; display: flex; justify-content: center; align-items: center; font-size: 0.8rem; letter-spacing: 5px; color: var(--accent); transition: opacity 1s ease; }
+        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #050505; z-index: 20000; display: flex; justify-content: center; align-items: center; font-size: 0.8rem; letter-spacing: 5px; color: var(--accent); transition: opacity 1s ease; pointer-events: none; }
 
-        /* התאמה לנייד */
-        @media (max-width: 768px) { #lobby { width: 100% !important; max-width: 100% !important; border-right: none; } }
+        @media (max-width: 768px) { #lobby { width: 100%!important; max-width: 100%!important; border-right: none; } }
     </style>
 </head>
 <body>
@@ -154,12 +155,12 @@
         
         <div class="dropdown-wrapper">
             <div class="dropdown">
-                <button onclick="toggleDropdown()" class="dropbtn" id="sortBtn">SORT BY: ALL SCENARIOS <span>▼</span></button>
+                <button onclick="toggleDropdown(event)" class="dropbtn" id="sortBtn">SORT BY: ALL SCENARIOS <span>▼</span></button>
                 <div id="sortDropdown" class="dropdown-content">
                     <button onclick="filterData('all', 'ALL SCENARIOS')">ALL SCENARIOS</button>
-                    <button onclick="filterData('sci', 'SCIENTIFIC 🔬')">SCIENTIFIC 🔬</button>
-                    <button onclick="filterData('spc', 'SPECIAL ✨')">SPECIAL ✨</button>
-                    <button onclick="filterData('fun', 'FUNNY 😂')">FUNNY 😂</button>
+                    <button onclick="filterData('sci', 'SCIENTIFIC')">SCIENTIFIC</button>
+                    <button onclick="filterData('spc', 'SPECIAL')">SPECIAL</button>
+                    <button onclick="filterData('fun', 'FUNNY')">FUNNY</button>
                 </div>
             </div>
         </div>
@@ -190,51 +191,57 @@
     </div>
 
     <script>
-        // המערך המלא של 36 התרחישים עם כל ההסברים!
+        // 41 התרחישים
         const scenarios = [
-            { id:1, cat:'sci', title: "Twice as Fast", desc: "Day/Night cycle is now 12 hours.", speed: 4, t:["Violent wind patterns start", "Extreme tidal bulges flood coasts", "Global jetstream destabilization"], stats:["22", "0.9", "71", "60"], expl:["Faster rotation heats the atmosphere through extreme friction.", "Centrifugal force pushes you slightly upward.", "Oceans become violently chaotic.", "Super-hurricanes drop survival rates."] },
-            { id:2, cat:'sci', title: "No Sun", desc: "Earth drifts into deep space.", speed: 0.5, t:["Total darkness falls instantly", "Global surface freeze begins", "Atmosphere collapses into snow"], stats:["-270", "1.0", "100", "0"], expl:["Earth cools to the temperature of deep space.", "Mass hasn't changed, so gravity remains normal.", "Oceans freeze solid instantly.", "No heat and no photosynthesis means zero chance for surface life."] },
-            { id:3, cat:'sci', title: "Gravity x2", desc: "Planetary mass doubled.", speed: 0.5, t:["Everyone feels incredibly heavy", "Weak structures collapse immediately", "Trees and mountains begin to crumble"], stats:["35", "2.0", "75", "5"], expl:["Higher gravity holds a thicker atmosphere, trapping heat.", "Double mass equals double gravitational pull.", "Water pools heavily, oceans compress.", "Heart failure and crushed lungs drastically reduce survival."] },
-            { id:4, cat:'sci', title: "No Oceans", desc: "All water instantly vanishes.", speed: 0.5, t:["Massive oceanic basins exposed", "Global firestorms due to dry air", "Total oxygen cycle collapse"], stats:["85", "1.0", "0", "0"], expl:["No oceans means extreme, unchecked planetary heating.", "Negligible difference to global gravity.", "100% of liquid water is gone.", "Without water or marine algae, we die."] },
-            { id:5, cat:'sci', title: "Snowball Earth", desc: "Total albedo reflection. A frozen world.", speed: 0.5, t:["Equator temperatures drop to 0°C", "Global glaciation covers oceans", "Photosynthesis stops entirely"], stats:["-50", "1.0", "100", "10"], expl:["White ice reflects all sunlight away.", "Planetary mass remains identical.", "Water is entirely locked in global ice sheets.", "Only deep underground habitats can support life."] },
-            { id:6, cat:'spc', title: "Binary Star", desc: "Earth gets a second, orange sun.", speed: 0.5, t:["Double shadows appear", "No real night cycle", "Extreme UV radiation bakes surface"], stats:["55", "1.0", "40", "30"], expl:["Two heat sources dramatically raise the temperature.", "Earth's internal gravity isn't affected.", "Intense heat evaporates shallow oceans.", "Extreme heatwaves and radiation make the surface hostile."] },
-            { id:7, cat:'sci', title: "Vulcan Era", desc: "Total tectonic instability.", speed: 1.5, t:["Supervolcanoes erupt globally", "Ash cloud veils the sky completely", "Sulfuric acid rain oceans"], stats:["90", "1.0", "30", "0"], expl:["Magma reaching the surface boils the atmosphere.", "Geological restructuring doesn't change mass.", "Lava boils away most of the oceans.", "Toxic gases and heat mean zero survival."] },
-            { id:8, cat:'sci', title: "No Atmosphere", desc: "The void reaches the surface.", speed: 0.5, t:["Instant boiling of surface fluids", "Total silence", "Lethal cosmic radiation hits ground"], stats:["-18", "1.0", "0", "0"], expl:["Surface freezes in shade, boils in sun.", "Gravity easily remains at 1G.", "Zero pressure causes liquid water to boil into space.", "No oxygen, no pressure, lethal radiation."] },
-            { id:9, cat:'sci', title: "Sea Level +100m", desc: "The great flood returns.", speed: 0.5, t:["Major coastal cities submerged", "Archipelago world formed", "Global ocean currents radically shift"], stats:["24", "1.0", "95", "80"], expl:["More ocean surface absorbs slightly more heat.", "Gravity is unaffected by melted ice.", "Water covers almost the entire surface.", "Humanity survives on boats and mountains."] },
-            { id:10, cat:'sci', title: "Backwards Orbit", desc: "Venus-like retrograde rotation.", speed: -1, t:["Sun sets in the East", "Wind systems violently reverse", "Sahara turns green, Amazon turns desert"], stats:["15", "1.0", "71", "95"], expl:["Average temperature remains similar, regional climates invert.", "Direction of spin doesn't alter gravity.", "Currents flow backward.", "High survival, massive agricultural shock."] },
-            { id:11, cat:'sci', title: "Tidally Locked", desc: "One side always faces the sun.", speed: 0, t:["Rotation stops, one side burns", "Permanent hurricane at terminator", "Dark side freezes solid"], stats:["100/-100", "1.0", "35", "15"], expl:["Sun-facing side boils, dark side freezes.", "Gravity remains stable.", "Boiled on one side, frozen on the other.", "Life only possible in the twilight ring."] },
-            { id:12, cat:'spc', title: "Earth's Rings", desc: "A shattered moon forms a ring system.", speed: 0.5, t:["Spectacular ring shadow on equator", "Constant meteor showers", "Nights become unnaturally bright"], stats:["14", "1.0", "71", "85"], expl:["Rings cast a shadow, slightly cooling the planet.", "Gravity is normal.", "Tides become erratic.", "Constant meteor bombardment lowers survival slightly."] },
-            { id:13, cat:'sci', title: "Kessler Syndrome", desc: "Millions of debris pieces trap us.", speed: 0.5, t:["Satellites destroyed in chain reaction", "GPS fails", "Space travel impossible"], stats:["15", "1.0", "71", "90"], expl:["Debris doesn't block enough sunlight to alter temperatures.", "Gravity is normal.", "Oceans remain untouched.", "Civilization takes a hit, biological survival high."] },
-            { id:14, cat:'spc', title: "Glass Earth", desc: "The crust becomes transparent.", speed: 0.5, t:["Sunlight hits the inner mantle", "Blinding glow from core", "Biological clocks destroyed"], stats:["40", "1.0", "71", "0"], expl:["Hot core radiates heat directly to the surface.", "Maintains roughly 1G.", "Water warms significantly.", "Sleep cycles destroyed, core radiation wipes out life."] },
-            { id:15, cat:'spc', title: "Donut Earth", desc: "Toroidal planet physics.", speed: 1.0, t:["Gravity pulls sideways in zones", "Seasons become wildly erratic", "Moons orbit through center"], stats:["15", "0.4", "65", "40"], expl:["Temperature varies wildly.", "Centrifugal forces drastically reduce gravity.", "Water pools on the outer edges.", "Bizarre weather makes survival difficult."] },
-            { id:16, cat:'fun', title: "Flat Earth", desc: "The ultimate conspiracy is true.", speed: 0.3, t:["Gravity pulls diagonally near edges", "Cats push everything off rim", "Ice wall becomes tourist hotspot"], stats:["15", "1.0", "71", "50"], expl:["Sunlight hits evenly.", "Gravity pulls toward the center of the disk.", "Oceans held back by ice wall.", "Don't fall off the edge."] },
-            { id:17, cat:'fun', title: "Minecraft Earth", desc: "Blocky physics take over.", speed: 0.5, t:["Trees float when chopped", "Creepers spawn in dark", "Digging straight down is fatal"], stats:["20", "1.0", "70", "42"], expl:["Torches provide infinite heat.", "Gravity only applies to sand and players.", "Water creates infinite source blocks.", "Surviving the first night is tough."] },
-            { id:18, cat:'fun', title: "Breathing Earth", desc: "The planet expands and contracts.", speed: 1.0, t:["Earthquakes are just hiccups", "Atmosphere gets pushed in and out", "Tides become incredibly chaotic"], stats:["20", "0.5-1.5", "71", "30"], expl:["Friction from flexing creates thermal heating.", "Gravity shifts wildly as radius changes.", "Oceans slosh violently.", "Constant hyper-earthquakes."] },
-            { id:19, cat:'spc', title: "Jupiter Mass", desc: "Earth becomes a super-massive gas giant.", speed: 1.5, t:["You instantly weigh 300x more", "Atmospheric pressure crushes everything", "Diamonds rain from sky"], stats:["150", "2.5", "10", "0"], expl:["Extreme pressure generates immense heat.", "Immense mass crushes bones into dust.", "Liquid water compressed into metallic ice.", "0% survival."] },
-            { id:20, cat:'spc', title: "Cyberpunk Earth", desc: "A planet-wide glowing mega-city.", speed: 0.8, t:["Oceans replaced by data streams", "Pollution reaches critical levels", "Flying cars and neon fill sky"], stats:["35", "1.0", "0", "85"], expl:["Server farms heat the planet.", "Artificial gravity generators.", "Real water replaced by liquid cooling.", "Humans survive via cybernetic enhancements."] },
-            { id:21, cat:'fun', title: "Cheese Earth", desc: "The planet is literally made of cheese.", speed: 0.5, t:["Delicious smell fills air", "Mice population explodes", "Oceans turn into fondue"], stats:["25", "0.8", "0", "99"], expl:["Cheese ferments, creating a warm greenhouse effect.", "Less dense than rock, lowering gravity.", "Water replaced by melted Swiss.", "Everyone survives and gets fat."] },
-            { id:22, cat:'fun', title: "Potato Earth", desc: "It's just a giant space potato.", speed: 0.5, t:["French fry asteroids spotted", "Gravitational lumps cause weird walking", "Irish space program dominates"], stats:["10", "0.8", "0", "80"], expl:["Potatoes don't retain heat well.", "Lumpy gravity pockets.", "No water, just starch.", "Survival requires ketchup."] },
-            { id:23, cat:'fun', title: "Bouncy Earth", desc: "The planet lost its rigid structure.", speed: 1.0, t:["Everyone feels seasick", "Trampolines obsolete", "Earthquakes are wobbly giggles"], stats:["20", "0.5-1.5", "71", "70"], expl:["Friction warms the crust slightly.", "Feels like a massive trampoline.", "Oceans splash everywhere.", "Motion sickness pills become top currency."] },
-            { id:24, cat:'fun', title: "Disco Planet", desc: "Saturday Night Fever on a global scale.", speed: 3.0, t:["Oceans turn into flashing dance floors", "Clouds pulse to beat", "Aliens arrive to rate moves"], stats:["25", "1.0", "71", "90"], expl:["Neon lights generate mild warmth.", "Gravity compels you to groove.", "Water acts as a mirror ball.", "You only die if you lack rhythm."] },
-            { id:25, cat:'fun', title: "Invisible Earth", desc: "Someone pressed 'hide layer'.", speed: 1.0, t:["Birds crash into invisible mountains", "Satellites lose visual tracking", "Where did I park my car?"], stats:["15", "1.0", "71", "5"], expl:["Sunlight passes right through the ground.", "Mass is there, just unseen.", "You can drown in invisible water.", "People fall off unseen cliffs."] },
-            { id:26, cat:'spc', title: "Neon Grid", desc: "Digital simulation confirmed.", speed: 1.0, t:["Nature textures fail to load", "Physics engine glitches", "Glowing polygons everywhere"], stats:["0", "1.0", "0", "99"], expl:["Temperature is just a variable.", "Gravity hardcoded to 1.000G.", "Water rendering disabled to save memory.", "You are immortal code."] },
-            { id:27, cat:'sci', title: "Magma Oceans", desc: "Water boils away, replaced by lava.", speed: 1.0, t:["Total evaporation of all seas", "Temperature skyrockets", "Ships replaced by hovercrafts"], stats:["800", "1.0", "0", "0"], expl:["Liquid rock turns atmosphere into an oven.", "Gravity unaffected.", "Zero water. Fiery death.", "Instant incineration."] },
-            { id:28, cat:'sci', title: "Absolute Ice", desc: "The ultimate frozen wasteland.", speed: 0.2, t:["Oceans freeze solid instantly", "Atmosphere turns into liquid snow", "Absolute silence falls"], stats:["-200", "1.0", "100", "2"], expl:["Temperatures approach absolute zero.", "Standard mass equals standard gravity.", "Moisture locked in diamond-hard ice.", "Deep-core bunkers needed."] },
-            { id:29, cat:'spc', title: "Solid Gold", desc: "Midas touched the world.", speed: 0.5, t:["Economy crashes instantly", "Extreme gravity crushes structures", "Reflections cause mass blindness"], stats:["40", "2.5", "0", "0"], expl:["Excellent thermal conductor.", "Extremely dense, multiplying gravity.", "No liquid water.", "Gravity crushes you."] },
-            { id:30, cat:'sci', title: "Spaghettification", desc: "Tidal forces from a black hole.", speed: 3.0, t:["Extreme vertical stretching", "Time dilation makes clocks stop", "Event horizon crossed"], stats:["-100", "100", "0", "0"], expl:["Black hole strips away atmosphere.", "Gravitational differential stretches you.", "Oceans sucked into the void.", "Stretched into an atom-wide string."] },
-            { id:31, cat:'sci', title: "Hyper Spin", desc: "1 Second = 1 Day.", speed: 30.0, t:["Objects thrown to space", "Atmosphere ignites", "Planetary structural failure"], stats:["500", "0.1", "0", "0"], expl:["Speed causes atmosphere to combust.", "Centrifugal force flings you into orbit.", "Oceans thrown off planet.", "Planet rips itself apart."] },
-            { id:32, cat:'sci', title: "Pangaea Ultima", desc: "All continents merge into one.", speed: 0.5, t:["Massive desertification in center", "Extreme mega-monsoons on coasts", "Extinction of marine life"], stats:["30", "1.0", "71", "40"], expl:["Landmass prevents currents from cooling interior.", "Mass unchanged.", "Water pushed to outer ocean.", "Interior is unlivable desert."] },
-            { id:33, cat:'sci', title: "Magnetic Reversal", desc: "Earth's magnetic poles flip.", speed: 1.0, t:["Compasses point South", "Auroras at equator", "Satellite grids fail"], stats:["15", "1.0", "71", "90"], expl:["Magnetic shield weakens, letting in solar heat.", "Gravity unrelated to electromagnetism.", "Oceans unaffected.", "Slight increase in radiation."] },
-            { id:34, cat:'sci', title: "Ozone Collapse", desc: "The ozone layer completely vanishes.", speed: 1.0, t:["Lethal UV hits surface", "Daytime outdoors deadly", "Plants burn and mutate"], stats:["28", "1.0", "71", "20"], expl:["High-energy UV-C bakes the surface.", "Gravity normal.", "Upper oceans irradiated.", "Going outside during day is lethal."] },
-            { id:35, cat:'sci', title: "Rogue Jupiter", desc: "Jupiter migrates to inner solar system.", speed: 0.5, t:["Jupiter dominates night sky", "Mega-quakes from tides", "Asteroids hit constantly"], stats:["15", "1.0", "71", "10"], expl:["Jupiter blocks sunlight, causes tidal heating.", "Jupiter distorts Earth's gravity.", "Tidal waves wipe continents.", "Constant meteor strikes."] },
-            { id:36, cat:'sci', title: "Oxygen Spike", desc: "Atmospheric oxygen hits 35%.", speed: 1.0, t:["Insects grow to massive sizes", "Forest fires burn uncontrollably", "Oxygen toxicity long-term"], stats:["18", "1.0", "71", "75"], expl:["Fires burn hotter and faster.", "Gravity unaffected.", "Oceans highly oxygenated.", "Giant bugs and eternal wildfires."] }
+            { id:1, cat:'sci', title:"Twice as Fast", desc:"Day/Night cycle is now 12 hours.", speed:4, t:["Violent wind patterns start", "Extreme tidal bulges flood coasts", "Global jetstream destabilization"], stats:["22", "0.9", "71", "60"], expl:["Faster rotation heats the atmosphere through extreme friction.", "Centrifugal force pushes you slightly upward.", "Oceans become violently chaotic.", "Super-hurricanes drop survival rates."] },
+            { id:2, cat:'sci', title:"No Sun", desc:"Earth drifts into deep space.", speed:0.5, t:["Total darkness falls instantly", "Global surface freeze begins", "Atmosphere collapses into snow"], stats:["-270", "1.0", "100", "0"], expl:["Earth cools to the temperature of deep space.", "Mass hasn't changed, so gravity remains normal.", "Oceans freeze solid instantly.", "No heat and no photosynthesis means zero chance for surface life."] },
+            { id:3, cat:'sci', title:"Gravity x2", desc:"Planetary mass doubled.", speed:0.5, t:["Everyone feels incredibly heavy", "Weak structures collapse immediately", "Trees and mountains begin to crumble"], stats:["35", "2.0", "75", "5"], expl:["Higher gravity holds a thicker atmosphere, trapping heat.", "Double mass equals double gravitational pull.", "Water pools heavily, oceans compress.", "Heart failure and crushed lungs drastically reduce survival."] },
+            { id:4, cat:'sci', title:"No Oceans", desc:"All water instantly vanishes.", speed:0.5, t:["Massive oceanic basins exposed", "Global firestorms due to dry air", "Total oxygen cycle collapse"], stats:["85", "1.0", "0", "0"], expl:["No oceans means extreme, unchecked planetary heating.", "Negligible difference to global gravity.", "100% of liquid water is gone.", "Without water or marine algae, we die."] },
+            { id:5, cat:'sci', title:"Snowball Earth", desc:"Total albedo reflection. A frozen world.", speed:0.5, t:["Equator temperatures drop to 0°C", "Global glaciation covers oceans", "Photosynthesis stops entirely"], stats:["-50", "1.0", "100", "10"], expl:["White ice reflects all sunlight away.", "Planetary mass remains identical.", "Water is entirely locked in global ice sheets.", "Only deep underground habitats can support life."] },
+            { id:6, cat:'spc', title:"Binary Star", desc:"Earth gets a second, orange sun.", speed:0.5, t:["Double shadows appear", "No real night cycle", "Extreme UV radiation bakes surface"], stats:["55", "1.0", "40", "30"], expl:["Two heat sources dramatically raise the temperature.", "Earth's internal gravity isn't affected.", "Intense heat evaporates shallow oceans.", "Extreme heatwaves and radiation make the surface hostile."] },
+            { id:7, cat:'sci', title:"Vulcan Era", desc:"Total tectonic instability.", speed:1.5, t:["Supervolcanoes erupt globally", "Ash cloud veils the sky completely", "Sulfuric acid rain oceans"], stats:["90", "1.0", "30", "0"], expl:["Magma reaching the surface boils the atmosphere.", "Geological restructuring doesn't change mass.", "Lava boils away most of the oceans.", "Toxic gases and heat mean zero survival."] },
+            { id:8, cat:'sci', title:"No Atmosphere", desc:"The void reaches the surface.", speed:0.5, t:["Instant boiling of surface fluids", "Total silence", "Lethal cosmic radiation hits ground"], stats:["-18", "1.0", "0", "0"], expl:["Surface freezes in shade, boils in sun.", "Gravity easily remains at 1G.", "Zero pressure causes liquid water to boil into space.", "No oxygen, no pressure, lethal radiation."] },
+            { id:9, cat:'sci', title:"Sea Level +100m", desc:"The great flood returns.", speed:0.5, t:["Major coastal cities submerged", "Archipelago world formed", "Global ocean currents radically shift"], stats:["24", "1.0", "95", "80"], expl:["More ocean surface absorbs slightly more heat.", "Gravity is unaffected by melted ice.", "Water covers almost the entire surface.", "Humanity survives on boats and mountains."] },
+            { id:10, cat:'sci', title:"Backwards Orbit", desc:"Venus-like retrograde rotation.", speed:-1, t:["Sun sets in the East", "Wind systems violently reverse", "Sahara turns green, Amazon turns desert"], stats:["15", "1.0", "71", "95"], expl:["Average temperature remains similar, regional climates invert.", "Direction of spin doesn't alter gravity.", "Currents flow backward.", "High survival, massive agricultural shock."] },
+            { id:11, cat:'sci', title:"Tidally Locked", desc:"One side always faces the sun.", speed:0, t:["Rotation stops, one side burns", "Permanent hurricane at terminator", "Dark side freezes solid"], stats:["100/-100", "1.0", "35", "15"], expl:["Sun-facing side boils, dark side freezes.", "Gravity remains stable.", "Boiled on one side, frozen on the other.", "Life only possible in the twilight ring."] },
+            { id:12, cat:'spc', title:"Earth's Rings", desc:"A shattered moon forms a ring system.", speed:0.5, t:["Spectacular ring shadow on equator", "Constant meteor showers", "Nights become unnaturally bright"], stats:["14", "1.0", "71", "85"], expl:["Rings cast a shadow, slightly cooling the planet.", "Gravity is normal.", "Tides become erratic.", "Constant meteor bombardment lowers survival slightly."] },
+            { id:13, cat:'sci', title:"Kessler Syndrome", desc:"Millions of debris pieces trap us.", speed:0.5, t:["Satellites destroyed in chain reaction", "GPS fails", "Space travel impossible"], stats:["15", "1.0", "71", "90"], expl:["Debris doesn't block enough sunlight to alter temperatures.", "Gravity is normal.", "Oceans remain untouched.", "Civilization takes a hit, biological survival high."] },
+            { id:14, cat:'spc', title:"Glass Earth", desc:"The crust becomes transparent.", speed:0.5, t:["Sunlight hits the inner mantle", "Blinding glow from core", "Biological clocks destroyed"], stats:["40", "1.0", "71", "0"], expl:["Hot core radiates heat directly to the surface.", "Maintains roughly 1G.", "Water warms significantly.", "Sleep cycles destroyed, core radiation wipes out life."] },
+            { id:15, cat:'spc', title:"Donut Earth", desc:"Toroidal planet physics.", speed:1.0, t:["Gravity pulls sideways in zones", "Seasons become wildly erratic", "Moons orbit through center"], stats:["15", "0.4", "65", "40"], expl:["Temperature varies wildly.", "Centrifugal forces drastically reduce gravity.", "Water pools on the outer edges.", "Bizarre weather makes survival difficult."] },
+            { id:16, cat:'fun', title:"Flat Earth", desc:"The ultimate conspiracy is true.", speed:0.3, t:["Gravity pulls diagonally near edges", "Cats push everything off rim", "Ice wall becomes tourist hotspot"], stats:["15", "1.0", "71", "50"], expl:["Sunlight hits evenly.", "Gravity pulls toward the center of the disk.", "Oceans held back by ice wall.", "Don't fall off the edge."] },
+            { id:17, cat:'fun', title:"Minecraft Earth", desc:"Blocky physics take over.", speed:0.5, t:["Trees float when chopped", "Creepers spawn in dark", "Digging straight down is fatal"], stats:["20", "1.0", "70", "42"], expl:["Torches provide infinite heat.", "Gravity only applies to sand and players.", "Water creates infinite source blocks.", "Surviving the first night is tough."] },
+            { id:18, cat:'fun', title:"Breathing Earth", desc:"The planet expands and contracts.", speed:1.0, t:["Earthquakes are just hiccups", "Atmosphere gets pushed in and out", "Tides become incredibly chaotic"], stats:["20", "0.5-1.5", "71", "30"], expl:["Friction from flexing creates thermal heating.", "Gravity shifts wildly as radius changes.", "Oceans slosh violently.", "Constant hyper-earthquakes."] },
+            { id:19, cat:'spc', title:"Jupiter Mass", desc:"Earth becomes a super-massive gas giant.", speed:1.5, t:["You instantly weigh 300x more", "Atmospheric pressure crushes everything", "Diamonds rain from sky"], stats:["150", "2.5", "10", "0"], expl:["Extreme pressure generates immense heat.", "Immense mass crushes bones into dust.", "Liquid water compressed into metallic ice.", "0% survival."] },
+            { id:20, cat:'spc', title:"Cyberpunk Earth", desc:"A planet-wide glowing mega-city.", speed:0.8, t:["Oceans replaced by data streams", "Pollution reaches critical levels", "Flying cars and neon fill sky"], stats:["35", "1.0", "0", "85"], expl:["Server farms heat the planet.", "Artificial gravity generators.", "Real water replaced by liquid cooling.", "Humans survive via cybernetic enhancements."] },
+            { id:21, cat:'fun', title:"Cheese Earth", desc:"The planet is literally made of cheese.", speed:0.5, t:["Delicious smell fills air", "Mice population explodes", "Oceans turn into fondue"], stats:["25", "0.8", "0", "99"], expl:["Cheese ferments, creating a warm greenhouse effect.", "Less dense than rock, lowering gravity.", "Water replaced by melted Swiss.", "Everyone survives and gets fat."] },
+            { id:22, cat:'fun', title:"Potato Earth", desc:"It's just a giant space potato.", speed:0.5, t:["French fry asteroids spotted", "Gravitational lumps cause weird walking", "Irish space program dominates"], stats:["10", "0.8", "0", "80"], expl:["Potatoes don't retain heat well.", "Lumpy gravity pockets.", "No water, just starch.", "Survival requires ketchup."] },
+            { id:23, cat:'fun', title:"Bouncy Earth", desc:"The planet lost its rigid structure.", speed:1.0, t:["Everyone feels seasick", "Trampolines obsolete", "Earthquakes are wobbly giggles"], stats:["20", "0.5-1.5", "71", "70"], expl:["Friction warms the crust slightly.", "Feels like a massive trampoline.", "Oceans splash everywhere.", "Motion sickness pills become top currency."] },
+            { id:24, cat:'fun', title:"Disco Planet", desc:"Saturday Night Fever on a global scale.", speed:3.0, t:["Oceans turn into flashing dance floors", "Clouds pulse to beat", "Aliens arrive to rate moves"], stats:["25", "1.0", "71", "90"], expl:["Neon lights generate mild warmth.", "Gravity compels you to groove.", "Water acts as a mirror ball.", "You only die if you lack rhythm."] },
+            { id:25, cat:'fun', title:"Invisible Earth", desc:"Someone pressed 'hide layer'.", speed:1.0, t:["Birds crash into invisible mountains", "Satellites lose visual tracking", "Where did I park my car?"], stats:["15", "1.0", "71", "5"], expl:["Sunlight passes right through the ground.", "Mass is there, just unseen.", "You can drown in invisible water.", "People fall off unseen cliffs."] },
+            { id:26, cat:'spc', title:"Neon Grid", desc:"Digital simulation confirmed.", speed:1.0, t:["Nature textures fail to load", "Physics engine glitches", "Glowing polygons everywhere"], stats:["0", "1.0", "0", "99"], expl:["Temperature is just a variable.", "Gravity hardcoded to 1.000G.", "Water rendering disabled to save memory.", "You are immortal code."] },
+            { id:27, cat:'sci', title:"Magma Oceans", desc:"Water boils away, replaced by lava.", speed:1.0, t:["Total evaporation of all seas", "Temperature skyrockets", "Ships replaced by hovercrafts"], stats:["800", "1.0", "0", "0"], expl:["Liquid rock turns atmosphere into an oven.", "Gravity unaffected.", "Zero water. Fiery death.", "Instant incineration."] },
+            { id:28, cat:'sci', title:"Absolute Ice", desc:"The ultimate frozen wasteland.", speed:0.2, t:["Oceans freeze solid instantly", "Atmosphere turns into liquid snow", "Absolute silence falls"], stats:["-200", "1.0", "100", "2"], expl:["Temperatures approach absolute zero.", "Standard mass equals standard gravity.", "Moisture locked in diamond-hard ice.", "Deep-core bunkers needed."] },
+            { id:29, cat:'spc', title:"Solid Gold", desc:"Midas touched the world.", speed:0.5, t:["Economy crashes instantly", "Extreme gravity crushes structures", "Reflections cause mass blindness"], stats:["40", "2.5", "0", "0"], expl:["Excellent thermal conductor.", "Extremely dense, multiplying gravity.", "No liquid water.", "Gravity crushes you."] },
+            { id:30, cat:'sci', title:"Spaghettification", desc:"Tidal forces from a black hole.", speed:3.0, t:["Extreme vertical stretching", "Time dilation makes clocks stop", "Event horizon crossed"], stats:["-100", "100", "0", "0"], expl:["Black hole strips away atmosphere.", "Gravitational differential stretches you.", "Oceans sucked into the void.", "Stretched into an atom-wide string."] },
+            { id:31, cat:'sci', title:"Hyper Spin", desc:"1 Second = 1 Day.", speed:30.0, t:["Objects thrown to space", "Atmosphere ignites", "Planetary structural failure"], stats:["500", "0.1", "0", "0"], expl:["Speed causes atmosphere to combust.", "Centrifugal force flings you into orbit.", "Oceans thrown off planet.", "Planet rips itself apart."] },
+            { id:32, cat:'sci', title:"Pangaea Ultima", desc:"All continents merge into one.", speed:0.5, t:["Massive desertification in center", "Extreme mega-monsoons on coasts", "Extinction of marine life"], stats:["30", "1.0", "71", "40"], expl:["Landmass prevents currents from cooling interior.", "Mass unchanged.", "Water pushed to outer ocean.", "Interior is unlivable desert."] },
+            { id:33, cat:'sci', title:"Magnetic Reversal", desc:"Earth's magnetic poles flip.", speed:1.0, t:["Compasses point South", "Auroras at equator", "Satellite grids fail"], stats:["15", "1.0", "71", "90"], expl:["Magnetic shield weakens, letting in solar heat.", "Gravity unrelated to electromagnetism.", "Oceans unaffected.", "Slight increase in radiation."] },
+            { id:34, cat:'sci', title:"Ozone Collapse", desc:"The ozone layer completely vanishes.", speed:1.0, t:["Lethal UV hits surface", "Daytime outdoors deadly", "Plants burn and mutate"], stats:["28", "1.0", "71", "20"], expl:["High-energy UV-C bakes the surface.", "Gravity normal.", "Upper oceans irradiated.", "Going outside during day is lethal."] },
+            { id:35, cat:'sci', title:"Rogue Jupiter", desc:"Jupiter migrates to inner solar system.", speed:0.5, t:["Jupiter dominates night sky", "Mega-quakes from tides", "Asteroids hit constantly"], stats:["15", "1.0", "71", "10"], expl:["Jupiter blocks sunlight, causes tidal heating.", "Jupiter distorts Earth's gravity.", "Tidal waves wipe continents.", "Constant meteor strikes."] },
+            { id:36, cat:'sci', title:"Oxygen Spike", desc:"Atmospheric oxygen hits 35%.", speed:1.0, t:["Insects grow to massive sizes", "Forest fires burn uncontrollably", "Oxygen toxicity long-term"], stats:["18", "1.0", "71", "75"], expl:["Fires burn hotter and faster.", "Gravity unaffected.", "Oceans highly oxygenated.", "Giant bugs and eternal wildfires."] },
+            { id:37, cat:'sci', title:"Iron Core Exposed", desc:"Crust and mantle stripped away.", speed:1.5, t:["Oceans drop into the void", "Core radiation flashes out", "Magnetic field goes berserk"], stats:["5500", "0.3", "0", "0"], expl:["The exposed liquid iron core radiates extreme heat.", "Without the crust, mass drops significantly.", "No containment for water.", "Instant incineration from core temperatures."] },
+            { id:38, cat:'sci', title:"Super Greenhouse", desc:"Runaway Venus-like effect.", speed:0.5, t:["Sky turns thick yellow", "Lead melts on the surface", "Oceans boil completely"], stats:["460", "1.0", "0", "0"], expl:["Thick CO2 traps all solar radiation.", "Gravity remains normal.", "Oceans evaporate, adding to the greenhouse effect.", "Surface is crushed by pressure and heat."] },
+            { id:39, cat:'sci', title:"Zero Gravity", desc:"Earth loses all its mass.", speed:0.1, t:["Everything floats into space", "Atmosphere drifts away instantly", "Oceans erupt into mist"], stats:["-100", "0.0", "0", "0"], expl:["Without atmosphere, temperatures plummet.", "Zero mass equals zero gravity.", "Water boils and floats away in the vacuum.", "No air, no ground, no survival."] },
+            { id:40, cat:'fun', title:"Baguette Earth", desc:"A very long, crusty planet.", speed:0.8, t:["Gravity pulls you to center", "Oceans pool at the 'ends'", "Giant space-pigeons attack"], stats:["22", "0.8", "50", "65"], expl:["Cylindrical shape alters heat distribution.", "Gravity is uneven across the crust.", "Water forms end-caps.", "Mostly livable, but very weird to walk on."] },
+            { id:41, cat:'spc', title:"Synthwave Matrix", desc:"Retro 80s simulation mode.", speed:1.0, t:["Sun turns into a neon grid", "Synth music plays from sky", "Gravity feels pixelated"], stats:["25", "1.0", "0", "99"], expl:["Temperature set by the aesthetic.", "Virtual gravity is perfectly stable.", "Water replaced by glowing pink waves.", "Aesthetically pleasing immortality."] }
         ];
 
         let scene, camera, renderer, globe, clouds, atmosphere, starfield, sun, sun2, nightGlobe;
-        let globeMat, earthTex, bumpTex, specTex, sphereGeo, donutGeo, flatGeo, boxGeo;
+        let globeMat, earthTex, bumpTex, specTex, sphereGeo, donutGeo, flatGeo, boxGeo, cylinderGeo;
         let ringMesh, debrisMesh, coreMesh, jupiterMesh;
         let isSim = false, breathingTween = null, bouncyTween = null, discoInterval = null;
         let controls, currentScenario = null;
+        let cheeseTex;
 
         const textureLoader = new THREE.TextureLoader();
         const textures = {
@@ -245,11 +252,28 @@
             lights: 'https://stemkoski.github.io/Three.js/images/earth-night.jpg'
         };
 
+        // פונקציה לייצור טקסטורת גבינה מחוררת אמיתית
+        function createCheeseTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512; canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#ffdb58'; 
+            ctx.fillRect(0,0,512,512);
+            for(let i=0; i<45; i++) {
+                const r = Math.random()*15 + 5;
+                const x = Math.random()*512;
+                const y = Math.random()*512;
+                ctx.fillStyle = '#c4a321'; 
+                ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = '#8f7615'; 
+                ctx.beginPath(); ctx.arc(x+2, y+2, r*0.7, 0, Math.PI*2); ctx.fill();
+            }
+            return new THREE.CanvasTexture(canvas);
+        }
+
         function init() {
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(40, window.innerWidth/window.innerHeight, 0.1, 1000);
-            
-            // המצלמה בצד שמאל כדי שהתפריט לא יסתיר את כדור הארץ
             camera.position.set(-1.5, 0, 6);
 
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -257,9 +281,16 @@
             renderer.setPixelRatio(window.devicePixelRatio);
             document.body.appendChild(renderer.domElement);
 
-            earthTex = textureLoader.load(textures.day); bumpTex = textureLoader.load(textures.bump); specTex = textureLoader.load(textures.spec);
-            sphereGeo = new THREE.SphereGeometry(1, 128, 128); donutGeo = new THREE.TorusGeometry(1.2, 0.4, 64, 128);
-            flatGeo = new THREE.CylinderGeometry(1.5, 1.5, 0.05, 64); boxGeo = new THREE.BoxGeometry(1.5, 1.5, 1.5);
+            earthTex = textureLoader.load(textures.day); 
+            bumpTex = textureLoader.load(textures.bump); 
+            specTex = textureLoader.load(textures.spec);
+            cheeseTex = createCheeseTexture();
+
+            sphereGeo = new THREE.SphereGeometry(1, 128, 128); 
+            donutGeo = new THREE.TorusGeometry(1.2, 0.4, 64, 128);
+            flatGeo = new THREE.CylinderGeometry(1.5, 1.5, 0.05, 64); 
+            boxGeo = new THREE.BoxGeometry(1.5, 1.5, 1.5);
+            cylinderGeo = new THREE.CylinderGeometry(0.5, 0.5, 2.5, 64); 
 
             globeMat = new THREE.MeshStandardMaterial({ map: earthTex, bumpMap: bumpTex, bumpScale: 0.015, roughnessMap: specTex, roughness: 0.6, metalness: 0.1 });
             globe = new THREE.Mesh(sphereGeo, globeMat); scene.add(globe);
@@ -279,11 +310,11 @@
             atmosphere = new THREE.Mesh(new THREE.SphereGeometry(1.2, 128, 128), new THREE.ShaderMaterial({ vertexShader: `varying vec3 vNormal; void main() { vNormal = normalize(normalMatrix * normal); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`, fragmentShader: `varying vec3 vNormal; void main() { float intensity = pow(0.6 - dot(vNormal, vec3(0, 0, 1.0)), 4.0); gl_FragColor = vec4(0.3, 0.6, 1.0, 1.0) * intensity; }`, side: THREE.BackSide, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false })); scene.add(atmosphere);
 
             ringMesh = new THREE.Mesh(new THREE.RingGeometry(1.4, 2.4, 128), new THREE.MeshStandardMaterial({ map: textureLoader.load(textures.clouds), side: THREE.DoubleSide, transparent: true, opacity: 0.7 })); ringMesh.rotation.x = Math.PI / 2; ringMesh.visible = false; scene.add(ringMesh);
+            
             const debrisGeo = new THREE.BufferGeometry(); const debCoords = []; for(let i=0; i<3000; i++) { let r = 1.05 + Math.random() * 0.2, th = Math.random() * 2 * Math.PI, ph = Math.acos(2 * Math.random() - 1); debCoords.push(r * Math.sin(ph) * Math.cos(th), r * Math.sin(ph) * Math.sin(th), r * Math.cos(ph)); }
             debrisGeo.setAttribute('position', new THREE.Float32BufferAttribute(debCoords, 3)); debrisMesh = new THREE.Points(debrisGeo, new THREE.PointsMaterial({color: 0xff5533, size: 0.015})); debrisMesh.visible = false; scene.add(debrisMesh);
-            coreMesh = new THREE.Mesh(new THREE.SphereGeometry(0.5, 64, 64), new THREE.MeshBasicMaterial({ color: 0xff3300 })); coreMesh.visible = false; scene.add(coreMesh);
             
-            // מודל כוכב צדק בשביל התרחיש המיוחד
+            coreMesh = new THREE.Mesh(new THREE.SphereGeometry(0.5, 64, 64), new THREE.MeshBasicMaterial({ color: 0xff3300 })); coreMesh.visible = false; scene.add(coreMesh);
             jupiterMesh = new THREE.Mesh(new THREE.SphereGeometry(4, 64, 64), new THREE.MeshStandardMaterial({ color: 0xd39c7e, roughness: 0.9 })); jupiterMesh.position.set(-10, 4, -15); jupiterMesh.visible = false; scene.add(jupiterMesh);
 
             const starGeo = new THREE.BufferGeometry(); const starCoords = []; for(let i=0; i<8000; i++) { starCoords.push((Math.random()-0.5)*150, (Math.random()-0.5)*150, (Math.random()-0.5)*150); }
@@ -291,19 +322,16 @@
 
             controls = new THREE.OrbitControls(camera, renderer.domElement); controls.enableDamping = true; controls.dampingFactor = 0.05; controls.minDistance = 1.5; controls.maxDistance = 10; controls.autoRotate = true; controls.autoRotateSpeed = 0.5;
             
-            window.addEventListener('resize', () => { 
-                camera.aspect = window.innerWidth/window.innerHeight; 
-                camera.updateProjectionMatrix(); 
-                renderer.setSize(window.innerWidth, window.innerHeight); 
-            });
-            
+            window.addEventListener('resize', () => { camera.aspect = window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
             setTimeout(() => { document.getElementById('loader').style.opacity = '0'; setTimeout(() => document.getElementById('loader').remove(), 1000); }, 1500);
 
             initUI(); animate(); filterData('all', 'ALL SCENARIOS');
         }
 
-        // לוגיקה של התפריט הנפתח (Sort By)
-        function toggleDropdown() { document.getElementById("sortDropdown").classList.toggle("show"); }
+        function toggleDropdown(e) { 
+            if(e) e.stopPropagation();
+            document.getElementById("sortDropdown").classList.toggle("show"); 
+        }
         window.onclick = function(event) {
             if (!event.target.matches('.dropbtn')) {
                 let dropdowns = document.getElementsByClassName("dropdown-content");
@@ -319,8 +347,8 @@
                     const div = document.createElement('div'); div.className = 'card'; div.innerHTML = `<h3>${s.title}</h3><p>${s.desc}</p>`; div.onclick = () => enterSim(s); grid.appendChild(div);
                 }
             });
-            // תיקון לאנימציה כדי שהכרטיסיות לא יעלמו לעולם
             gsap.fromTo(".card", { x: -20, opacity: 0 }, { x: 0, opacity: 1, duration: 0.3, stagger: 0.02, ease: "power1.out", clearProps: "all" });
+            document.getElementById("sortDropdown").classList.remove("show");
         }
 
         function openStatExpl(index, title) {
@@ -374,13 +402,11 @@
             document.getElementById('s-water').innerText = s.stats[2] + "%"; document.getElementById('s-surv').innerText = s.stats[3] + "%";
             resetVisuals();
             
-            let targetZ = 2.8; if([15, 16, 17, 30].includes(s.id)) targetZ = 3.5; if(s.id === 19) targetZ = 4.0;
+            let targetZ = 2.8; if([15, 16, 17, 30, 40].includes(s.id)) targetZ = 3.5; if(s.id === 19) targetZ = 4.0;
             
-            // מזיז את המצלמה למרכז כשבוחרים תרחיש
             gsap.fromTo(camera.position, { x: -1.5, y: 2 }, { x: 0, y: 0, z: targetZ, duration: 2.5, ease: "power3.inOut" }); 
             controls.autoRotate = true; gsap.to(controls, { autoRotateSpeed: s.speed, duration: 2 });
 
-            // כל האפקטים הגרפיים לכל תרחיש אפשרי!
             switch(s.id) {
                 case 2: gsap.to(sun, { intensity: 0, duration: 2 }); atmosphere.visible = false; nightGlobe.material.uniforms.opacity.value = 0.5; nightGlobe.material.uniforms.sunPosition.value = new THREE.Vector3(0,0,0); break;
                 case 3: gsap.to(globe.scale, { y: 0.85, duration: 2 }); break;
@@ -400,7 +426,7 @@
                 case 18: breathingTween = gsap.to(globe.scale, { x: 1.1, y: 1.1, z: 1.1, duration: 1.5, yoyo: true, repeat: -1, ease: "sine.inOut" }); break;
                 case 19: gsap.to(globe.scale, { x: 1.3, y: 1.3, z: 1.3, duration: 2 }); globeMat.map = null; gsap.to(globeMat.color, { r: 0.8, g: 0.5, b: 0.2, duration: 1 }); clouds.material.color.setHex(0xffaa55); clouds.scale.set(1.1, 1.1, 1.1); break;
                 case 20: globeMat.map = null; globeMat.color.setHex(0x111111); globeMat.wireframe = true; nightGlobe.material.uniforms.cyberMode.value = 1.0; atmosphere.material.fragmentShader = `varying vec3 vNormal; void main() { float intensity = pow(0.6 - dot(vNormal, vec3(0, 0, 1.0)), 4.0); gl_FragColor = vec4(1.0, 0.0, 1.0, 1.0) * intensity; }`; atmosphere.material.needsUpdate = true; break;
-                case 21: globeMat.map = null; globeMat.color.setHex(0xffcc00); globeMat.roughness = 1.0; globeMat.metalness = 0.0; globeMat.bumpScale = 0.05; clouds.visible = false; nightGlobe.visible = false; break;
+                case 21: globeMat.map = cheeseTex; globeMat.color.setHex(0xffffff); globeMat.roughness = 1.0; globeMat.metalness = 0.0; clouds.visible = false; nightGlobe.visible = false; break; 
                 case 22: globeMat.map = null; globeMat.color.setHex(0x8B5A2B); globeMat.bumpScale = 0.1; globe.scale.set(1.2, 0.8, 1.1); clouds.visible = false; nightGlobe.visible = false; break;
                 case 23: bouncyTween = gsap.to(globe.scale, { y: 0.7, x: 1.15, z: 1.15, duration: 0.4, yoyo: true, repeat: -1, ease: "bounce.inOut" }); break;
                 case 24: globeMat.map = null; globeMat.wireframe = true; discoInterval = setInterval(() => { globeMat.color.setHex(Math.random() * 0xffffff); globeMat.emissive.setHex(Math.random() * 0xffffff); }, 200); clouds.visible = false; break;
@@ -416,6 +442,11 @@
                 case 34: clouds.material.color.setHex(0xffaaaa); atmosphere.material.fragmentShader = `varying vec3 vNormal; void main() { gl_FragColor = vec4(1.0, 0.2, 0.2, 0.5); }`; atmosphere.material.needsUpdate = true; break;
                 case 35: jupiterMesh.visible = true; gsap.fromTo(jupiterMesh.position, {x: -30}, {x: -12, duration: 4, ease: "power2.out"}); break;
                 case 36: atmosphere.material.fragmentShader = `varying vec3 vNormal; void main() { float intensity = pow(0.4 - dot(vNormal, vec3(0, 0, 1.0)), 2.0); gl_FragColor = vec4(0.4, 0.8, 1.0, 1.0) * intensity; }`; atmosphere.material.needsUpdate = true; clouds.material.color.setHex(0xddffff); break;
+                case 37: globe.scale.set(0.5, 0.5, 0.5); globeMat.map = null; globeMat.color.setHex(0xff2200); globeMat.emissive.setHex(0xff5500); clouds.visible = false; atmosphere.visible = false; nightGlobe.visible = false; break;
+                case 38: clouds.material.color.setHex(0xffffcc); clouds.material.opacity = 1.0; atmosphere.material.fragmentShader = `varying vec3 vNormal; void main() { gl_FragColor = vec4(1.0, 0.8, 0.2, 0.8); }`; atmosphere.material.needsUpdate = true; nightGlobe.visible = false; break;
+                case 39: debrisMesh.visible = true; clouds.visible = false; atmosphere.visible = false; nightGlobe.visible = false; break;
+                case 40: globe.geometry = cylinderGeo; globe.rotation.z = Math.PI / 4; globeMat.map = null; globeMat.color.setHex(0xc29851); globeMat.roughness = 0.9; clouds.visible = false; nightGlobe.visible = false; break;
+                case 41: globeMat.map = null; globeMat.color.setHex(0xff00ff); globeMat.emissive.setHex(0x220044); globeMat.wireframe = true; clouds.visible = false; nightGlobe.visible = false; atmosphere.material.fragmentShader = `varying vec3 vNormal; void main() { gl_FragColor = vec4(1.0, 0.0, 1.0, 0.5); }`; atmosphere.material.needsUpdate = true; break;
             }
         }
 
@@ -423,9 +454,9 @@
             if(breathingTween) { breathingTween.kill(); breathingTween = null; }
             if(bouncyTween) { bouncyTween.kill(); bouncyTween = null; }
             if(discoInterval) { clearInterval(discoInterval); discoInterval = null; }
-            globe.geometry = sphereGeo; globe.scale.set(1, 1, 1); clouds.scale.set(1, 1, 1);
+            globe.geometry = sphereGeo; globe.scale.set(1, 1, 1); globe.rotation.set(0, 0, 0); clouds.scale.set(1, 1, 1);
             globeMat.map = earthTex; globeMat.color.setHex(0xffffff); globeMat.emissive.setHex(0x000000); globeMat.roughness = 0.6; globeMat.metalness = 0.1; globeMat.bumpScale = 0.015; globeMat.transparent = false; globeMat.opacity = 1.0; globeMat.wireframe = false; globeMat.needsUpdate = true;
-            clouds.material.color.setHex(0xffffff); clouds.visible = true;
+            clouds.material.color.setHex(0xffffff); clouds.material.opacity = 0.8; clouds.visible = true;
             atmosphere.visible = true; atmosphere.material.fragmentShader = `varying vec3 vNormal; void main() { float intensity = pow(0.6 - dot(vNormal, vec3(0, 0, 1.0)), 4.0); gl_FragColor = vec4(0.3, 0.6, 1.0, 1.0) * intensity; }`; atmosphere.material.needsUpdate = true;
             nightGlobe.visible = true; nightGlobe.material.uniforms.opacity.value = 1.0; nightGlobe.material.uniforms.cyberMode.value = 0.0; nightGlobe.material.uniforms.sunPosition.value = sun.position;
             sun.intensity = 2.5; sun2.intensity = 0; ringMesh.visible = false; debrisMesh.visible = false; coreMesh.visible = false;
@@ -435,12 +466,7 @@
         function resetSim() { resetVisuals(); controls.autoRotate = true; gsap.to(controls, { autoRotateSpeed: 0.5, duration: 1 }); }
         
         function exitSim() { 
-            isSim = false; 
-            currentScenario = null; 
-            closeStatExpl(); 
-            document.body.classList.remove('sim-active'); 
-            
-            // מחזיר את המצלמה שמאלה ללובי
+            isSim = false; currentScenario = null; closeStatExpl(); document.body.classList.remove('sim-active'); 
             gsap.to(camera.position, { x: -1.5, y: 0, z: 6, duration: 2, ease: "power2.inOut" }); 
             resetSim(); 
         }
@@ -448,7 +474,14 @@
         function animate() {
             requestAnimationFrame(animate); if(controls) controls.update();
             if(clouds) clouds.rotation.y += 0.0003 * (isSim ? controls.autoRotateSpeed : 1);
-            if(debrisMesh && debrisMesh.visible) { debrisMesh.rotation.y += 0.002; debrisMesh.rotation.z += 0.001; }
+            if(debrisMesh && debrisMesh.visible) { 
+                debrisMesh.rotation.y += 0.002; debrisMesh.rotation.z += 0.001; 
+                if(currentScenario && currentScenario.id === 39) {
+                    const positions = debrisMesh.geometry.attributes.position.array;
+                    for(let i=0; i<positions.length; i+=3) { positions[i] += (Math.random()-0.5)*0.01; positions[i+1] += (Math.random()-0.5)*0.01; positions[i+2] += (Math.random()-0.5)*0.01; }
+                    debrisMesh.geometry.attributes.position.needsUpdate = true;
+                }
+            }
             if(ringMesh && ringMesh.visible) { ringMesh.rotation.z += 0.001; }
             renderer.render(scene, camera);
         }
